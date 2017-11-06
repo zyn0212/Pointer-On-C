@@ -1,21 +1,17 @@
 #include <stdio.h>
-static int isPrime(int n);
+#include <string.h>
 int main(void)
 {
-	int start = 1, end = 100, i = 0;
-	start += 0 == (1 & start) ? 1 : 0;
-	for( i = start; i < end; i += 2 )
-		if( 0 == isPrime(i) )
-			printf("%d\n", i);
+	char Result[101];
+	memset(Result, 0, sizeof Result);
+	int i = 0, j = 0;
+	for( i = 2; i <= 100; ++i )
+		if( 1 != Result[i] )
+			for( j = i << 1; j <= 100; j += i )
+				Result[j] = 1;
+	for( i = 1, j = 0; i <= 100; i += 1 )
+		if( 0 == Result[i])
+			printf("%3d\t%s", i, 0 == ++j % 5 ? "\n" : "");
+	printf("\n");
 	return 0;
-}
-static int isPrime(int n)
-{
-	int i = 3;
-	for( i = 3; i <= n >> 1; i += 2 )
-		if( 0 == n % i )
-			break;
-	if( i > n >> 1 )
-		return 0;
-	return 1;
 }

@@ -12,15 +12,15 @@ int main(int argc, char *argv[])
 		return 0;
 	else if( n > MAX )
 		n = MAX;
-	char * const tmp = calloc(n + 1, sizeof(char));
+	char * const tmp = calloc(n + 1 >> 1, sizeof(char));
 // 0 is true, 1 is false
-	for( tmp[0] = 1, tmp[1] = 1, tmp[2] = 0, i = 2; i < n + 1; ++i )
+	for( tmp[0] = 1; i < n + 1 >> 1; ++i )
 		if( 0 == tmp[i] )
-			for( j = i << 1; j < n + 1; j += i )
+			for( j = ((i << 1) + 1) * 3 - 1 >> 1; j < n + 1 >> 1; j +=  (((i << 1) + 1) * 3 - 1 >> 1) - i)
 				tmp[j] = 1;
-	for( i = 1, j = 0; i < n + 1; ++i )
+	for( i = 1, j = 1, printf("2\t"); i < n + 1 >> 1; ++i )
 		if( 0 == tmp[i] )
-			printf("%d%c", i, 0 == (7 & ++j) ? '\n' : '\t');
+			printf("%d%c", (i << 1) + 1, 0 == (7 & ++j) ? '\n' : '\t');
 	printf("%s", 0 == (7 & j) ? "" : "\n");
 	if( NULL != tmp )
 		free(tmp);

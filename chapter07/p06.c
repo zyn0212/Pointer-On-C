@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define MAX_LENGTH 256 << 1
+#define MAX_LENGTH 256
+//#define THREE_GAP
 static void written_amount(unsigned int amount, char *buffer);
 static int print_number(int number, int bitnumber,char *buffer);
 int main(int argc, char *argv[])
@@ -21,6 +22,7 @@ static void written_amount(unsigned int amount, char *buffer)
 		base *= 10;
 	base /= 10;
 	while( bitnumber > 0 ) {
+#ifdef THREE_GAP
 		if( bitnumber > 9 ) {
 			//billion
 			buffer += print_number(amount / 1000000000, (bitnumber - 1) / 3, buffer);
@@ -39,6 +41,44 @@ static void written_amount(unsigned int amount, char *buffer)
 		else
 			//one
 			buffer += print_number(amount, (bitnumber - 1) / 3, buffer);
+#else
+		if( bitnumber > 9 )
+			//billion
+			if( amount / 1000000000 < 10 && amount / 1000000000 > 0 && 0 == (amount / 1000000) % 100 ) {
+				buffer += print_number(amount / 1000000, (bitnumber - 4) / 3, buffer);
+				amount %= 1000000;
+				bitnumber = ((bitnumber + 2) / 3 - 1) * 3;
+			}
+			else {
+				buffer += print_number(amount / 1000000000, (bitnumber - 1) / 3, buffer);
+				amount %= 1000000000;
+			}
+		else if( bitnumber > 6 )
+			//million
+			if( amount / 1000000 < 10 && amount / 100000 > 0 && 0 == (amount / 1000) % 100 ) {
+				buffer += print_number(amount / 1000, (bitnumber - 4) / 3, buffer);
+				amount %= 1000;
+				bitnumber = ((bitnumber + 2) / 3 - 1) * 3;
+			}
+			else {
+				buffer += print_number(amount / 1000000, (bitnumber - 1) / 3, buffer);
+				amount %= 1000000;
+			}
+		else if( bitnumber > 3 )
+			//thousand
+			if( amount / 1000 < 10 && amount / 1000 > 0 && 0 == amount % 100 ) {
+				buffer += print_number(amount, (bitnumber - 4) / 3, buffer);
+				amount  = 0;
+				bitnumber = 0;
+			}
+			else {
+				buffer += print_number(amount / 1000, (bitnumber - 1) / 3, buffer);
+				amount %= 1000;
+			}
+		else
+			//one
+			buffer += print_number(amount, (bitnumber - 1) / 3, buffer);
+#endif
 		bitnumber = ((bitnumber + 2) / 3 - 1) * 3;
 	}
 	return;
@@ -52,7 +92,7 @@ char const *NumberNameLarge[10] = {
 };
 static int print_number(int number, int bitnumber, char *buffer)
 {
-	if( number < 0 || number > 999 || bitnumber < 0 || bitnumber > 3 || NULL == buffer )
+	if( number < 0 || number > 9999 || bitnumber < 0 || bitnumber > 3 || NULL == buffer )
 		return 0;
 	if( number / 100 > 0 )
 		sprintf(buffer, "%s%s Hundred ", buffer, NumberNameSmall[number / 100]);

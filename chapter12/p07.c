@@ -57,6 +57,8 @@ int main(int argc, char *argv[])
 				}
 			last = c;
 		}
+		fclose(fp);
+		fp = NULL;
 	}
 	PrintList(&head);
 	return 0;

@@ -9,27 +9,39 @@ typedef struct node_tag {
 	int str;
 	int dex;
 } NODE;
-int ia[NAMELENGTH];
-static int MergeSort(void *start, size_t size, int n, int (*cmp)(void *, void *));
-static int intcmp(void *a, void *b);
+typedef enum {
+	LARGE_TO_SMALL = 1,
+	SMALL_TO_LARGE = -1,
+} SORT_TYPE;
+static int MergeSort(void *start, size_t size, int n, int (*cmp)(void *, void *), SORT_TYPE sorttype);
+static int nodecmp(void *a, void *b);
 static void swap(void *a, void *b, size_t size);
 int main(void)
 {
 	srand(time(0));
-	int i = 0;
+	int i = 0, j = 0;
+	NODE ia[NAMELENGTH];
+	char *cp = NULL;
 	memset(ia, 0, sizeof ia);
-	for( i = 0; i < NAMELENGTH; ++i )
-		ia[i] = rand() & 0x7F;
-	for( i = 0; i < NAMELENGTH; ++i )
-		printf("%d\t%d\n", i, ia[i]);
+	for( i = 0; i < NAMELENGTH; ++i ) {
+		ia[i].value = i + 1;
+		ia[i].str = rand() & 0x0F;
+		ia[i].dex = rand() & 0x0F;
+		for( j = 0, cp = ia[i].PlayName; j < NAMELENGTH - 1; ++j )
+			*cp++ = rand() % 26 + 'a';
+		*cp = '\0';
+	}
+	for( i = 0,printf("No\t%-21s\tSTR\tDEX\n", "        NAME"); i < NAMELENGTH; ++i )
+		printf("%d\t%21s\t%d\t%d\n", ia[i].value, ia[i].PlayName, ia[i].str, ia[i].dex);
 	printf("=======================\n");
-	MergeSort(ia, sizeof ia[0], NAMELENGTH, intcmp);
-	for( i = 0; i < NAMELENGTH; ++i )
-		printf("%d\t%d\n", i, ia[i]);
+	SORT_TYPE sorttype = SMALL_TO_LARGE;
+	MergeSort(ia, sizeof ia[0], NAMELENGTH, nodecmp, sorttype);
+	for( i = 0,printf("No\t%-21s\tSTR\tDEX\n", "        NAME"); i < NAMELENGTH; ++i )
+		printf("%d\t%21s\t%d\t%d\n", ia[i].value, ia[i].PlayName, ia[i].str, ia[i].dex);
 	return 0;
 }
-static void Merging(void *head, size_t size, int n, int (*cmp)(void *, void *), void *sorted);
-static int MergeSort(void *start, size_t size, int n, int (*cmp)(void *, void *))
+static void Merging(void *head, size_t size, int n, int (*cmp)(void *, void *), void *sorted, SORT_TYPE sorttype);
+static int MergeSort(void *start, size_t size, int n, int (*cmp)(void *, void *), SORT_TYPE sorttype)
 {
 	if( NULL == start || size < 1 || n < 2 || NULL == cmp )
 		return -1;
@@ -39,17 +51,17 @@ static int MergeSort(void *start, size_t size, int n, int (*cmp)(void *, void *)
 		return -1;
 	}
 	if( n > 2 ) {
-		MergeSort(start, size, n >> 1, cmp);
-		MergeSort(start + (n >> 1) * size, size, n - (n >> 1), cmp);
-		Merging(start, size, n, cmp, sorted);
+		MergeSort(start, size, n >> 1, cmp, sorttype);
+		MergeSort(start + (n >> 1) * size, size, n - (n >> 1), cmp, sorttype);
+		Merging(start, size, n, cmp, sorted, sorttype);
 	}
 	else {
-		if( (*cmp)(start, start + size) > 0 )
+		if( ((*cmp)(start, start + size) ^ sorttype) < 0 )
 			swap(start, start + size, size);
 	}
 	return 0;
 }
-static void Merging(void *start, size_t size, int n, int (*cmp)(void *, void *), void *sorted)
+static void Merging(void *start, size_t size, int n, int (*cmp)(void *, void *), void *sorted, SORT_TYPE sorttype)
 {
 	int i = 0, cmpvalue = 0;
 	char *mid = start + (n >> 1) * size, *end = start + n * size;
@@ -63,7 +75,7 @@ static void Merging(void *start, size_t size, int n, int (*cmp)(void *, void *),
 			memcpy(to, head, size);
 			head += size;
 		}
-		else if( (cmpvalue = (*cmp)(head, tail)) <= 0 ) {
+		else if( ((cmpvalue = (*cmp)(head, tail)) ^ sorttype)  >= 0 ) {
 			memcpy(to, head, size);
 			head += size;
 		}
@@ -77,7 +89,7 @@ static void Merging(void *start, size_t size, int n, int (*cmp)(void *, void *),
 	free(sorted);
 	return;
 }
-static int intcmp(void *a, void *b)
+static int nodecmp(void *a, void *b)
 {
 	if( NULL == a && NULL == b )
 		return 0;
@@ -86,7 +98,9 @@ static int intcmp(void *a, void *b)
 	else if( NULL == b )
 		return 1;
 	else
-		return *(int *)a > *(int *)b ? 1 : *(int *)a == *(int *)b ? 0 : -1;
+		return ((NODE *)a)->str > ((NODE *)b)->str ? 1 : ((NODE *)a)->str < ((NODE *)b)->str
+															? -1 : ((NODE *)a)->dex > ((NODE *)b)->dex ? 1 : ((NODE *)a)->dex < ((NODE *)b)->dex 
+																							? -1 : strcmp(((NODE *)a)->PlayName, ((NODE *)b)->PlayName);
 }
 static void swap(void *a, void *b, size_t size)
 {

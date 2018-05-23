@@ -1,0 +1,10 @@
+typedef enum {
+	CPU_UNKNOWN,
+	CPU_VAX,
+	CPU_68000,
+	CPU_68020,
+	CPU_80386,
+	CPU_6809,
+	CPU_6502,
+	CPU_3B2,
+} CPU_TYPE;

@@ -26,6 +26,8 @@ int main(int argc, char *argv[])
 				else if( LINEMAX == count )
 					count = 0 & printf("\n%s:\t", "----");
 			}
+			fclose(fp);
+			fp = NULL;
 			lineno = 0;
 		}
 	return 0;

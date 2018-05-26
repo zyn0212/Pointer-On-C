@@ -18,15 +18,15 @@ int main(int argc, char *argv[])
 }
 static void fgrep(char const * const string, char const * const filename)
 {
+	char tmp[STRINGMAX];
+	memset(tmp, 0, sizeof tmp);
 	if( NULL == string || '\0' == *string ) {
 		printf("input a empty string!\n");
 		exit(0);
 	}
 	int line = 1, c = 0;
 	char const *pc = string;
-	char tmp[STRINGMAX];
 	char *pct = tmp;
-	memset(tmp, 0, sizeof tmp);
 	FILE *fp = NULL;
 	if( NULL == filename )
 		fp = stdin;
@@ -37,27 +37,49 @@ static void fgrep(char const * const string, char const * const filename)
 		}
 	}
 	while( EOF != (c = fgetc(fp)) ) {
-		*pct++ = c;
-		if( c == *pc ) {
-			pc += 1;
-			if( '\0' == *pc ) {
-				printf("%s:%s", NULL == filename ? "Keyboard" : filename, tmp);
-				while( EOF != (c = fgetc(fp)) && '\n' != c )
-					putchar(c);
-				if( EOF == c )
-					return;
-				putchar('\n');
-				line += 1;
-				memset(tmp, 0, sizeof tmp);
-				pct = tmp, pc = string;
+		if( pct - tmp >= STRINGMAX - 1 ) {
+			printf("Warning: too many characters in %dth line! Ignore that line!\n", line);
+			while( EOF != (c = fgetc(fp)) && '\n' != c )
+				NULL;
+			if( EOF == c ) {
+				fclose(fp);
+				fp = NULL;
+				return;
 			}
+			line += 1;
+			memset(tmp, 0, sizeof tmp);
+			pct = tmp;
+			pc = string;
 		}
 		else
+			*pct++ = c;
+		if( c == *pc )
+			pc += 1;
+		else {
 			pc = string;
+			if( c == *pc )
+				pc += 1;
+		}
+		if( '\0' == *pc ) {
+			printf("%s:%s", NULL == filename ? "Keyboard" : filename, tmp);
+			while( EOF != (c = fgetc(fp)) && '\n' != c )
+				putchar(c);
+			if( EOF == c ) {
+				fclose(fp);
+				fp = NULL;
+				return;
+			}
+			putchar('\n');
+			line += 1;
+			memset(tmp, 0, sizeof tmp);
+			pct = tmp;
+			pc = string;
+		}
 		if( '\n' == c ) {
 			line += 1;
 			memset(tmp, 0, sizeof tmp);
-			pct = tmp, pc = string;
+			pct = tmp;
+			pc = string;
 		}
 	}
 	fclose(fp);
